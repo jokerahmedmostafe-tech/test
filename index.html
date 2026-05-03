@@ -3,183 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول - ميدو AI</title>
+    <title>ميدو AI - نظام الكوينز</title>
     <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: #f0f2f5; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            margin: 0; 
-        }
-        .container { 
-            background: white; 
-            padding: 30px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
-            width: 350px; 
-            text-align: center; 
-        }
-        h2 { color: #1a73e8; margin-bottom: 20px; }
-        input { 
-            width: 100%; 
-            padding: 12px; 
-            margin: 10px 0; 
-            border: 1px solid #ddd; 
-            border-radius: 6px; 
-            box-sizing: border-box; 
-        }
-        button { 
-            width: 100%; 
-            padding: 12px; 
-            border: none; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            transition: 0.3s; 
-            margin-top: 10px; 
-            font-size: 15px;
-        }
-        .btn-login { background-color: #1a73e8; color: white; }
-        .btn-login:hover { background-color: #1557b0; }
+        :root { --primary: #1a73e8; --secondary: #34a853; --accent: #ea4335; --bg: #f8f9fa; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); display: flex; justify-content: center; padding: 20px; margin: 0; }
+        .container { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; }
         
-        .btn-signup { background-color: #34a853; color: white; }
-        .btn-signup:hover { background-color: #2d8e47; }
+        /* التنسيقات */
+        h2 { color: var(--primary); margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; margin-top: 10px; font-size: 15px; }
         
-        .btn-google { background-color: #ea4335; color: white; margin-top: 20px; }
-        .btn-google:hover { background-color: #c5221f; }
+        .btn-blue { background: var(--primary); color: white; }
+        .btn-green { background: var(--secondary); color: white; }
+        .btn-red { background: var(--accent); color: white; }
+        .btn-outline { background: transparent; border: 1px solid #ddd; color: #555; }
         
-        .divider {
-            margin: 20px 0;
-            border-bottom: 1px solid #ddd;
-            position: relative;
-        }
-        .divider span {
-            background: white;
-            padding: 0 10px;
-            color: #888;
-            font-size: 14px;
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-        
-        .msg { margin-top: 15px; font-size: 14px; font-weight: bold; }
+        /* الأقسام */
+        #auth-section, #dashboard-section { display: none; }
+        .card { background: #f1f3f4; padding: 15px; border-radius: 10px; margin: 15px 0; text-align: right; }
+        .balance-text { font-size: 24px; color: var(--secondary); font-weight: bold; text-align: center; }
+        .uid-text { font-size: 11px; color: #777; word-break: break-all; background: #eee; padding: 5px; border-radius: 5px; }
+        .status-msg { margin-top: 10px; font-size: 13px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>ميدو AI - تسجيل الدخول</h2>
-    
-    <input type="email" id="email" placeholder="البريد الإلكتروني (مثال: test@test.com)">
-    <input type="password" id="password" placeholder="كلمة المرور (6 أحرف أو أكثر)">
-    
-    <button class="btn-login" id="loginBtn">تسجيل الدخول</button>
-    <button class="btn-signup" id="signupBtn">إنشاء حساب جديد</button>
-    
-    <div class="divider"><span>أو</span></div>
-    
-    <button class="btn-google" id="googleBtn">الدخول بواسطة حساب Google</button>
-    
-    <div id="message" class="msg"></div>
+    <h2>Mopi - ميدو AI</h2>
+
+    <div id="auth-section">
+        <input type="email" id="email" placeholder="البريد الإلكتروني">
+        <input type="password" id="password" placeholder="كلمة المرور">
+        <button class="btn-blue" id="loginBtn">تسجيل الدخول</button>
+        <button class="btn-green" id="signupBtn">إنشاء حساب جديد</button>
+        <hr>
+        <button class="btn-red" id="googleBtn">الدخول بواسطة Google</button>
+    </div>
+
+    <div id="dashboard-section">
+        <div class="card">
+            <div class="balance-text">رصيدك: <span id="coinBalance">0</span> 🪙</div>
+        </div>
+
+        <div class="card">
+            <strong>الـ ID الخاص بك (للاستلام):</strong>
+            <div class="uid-text" id="myId">جاري التحميل...</div>
+        </div>
+
+        <button class="btn-green" id="earnBtn">إضغط هنا لربح 10 كوينز ⚡</button>
+
+        <div class="card">
+            <strong>إرسال كوينز لصديق:</strong>
+            <input type="text" id="receiverId" placeholder="ضع الـ ID الخاص بصديقك هنا">
+            <input type="number" id="sendAmount" placeholder="الكمية">
+            <button class="btn-blue" id="sendBtn">إرسال الآن</button>
+        </div>
+
+        <button class="btn-outline" id="logoutBtn">تسجيل الخروج</button>
+    </div>
+
+    <div id="message" class="status-msg"></div>
 </div>
 
 <script type="module">
-    // استيراد الأدوات الأساسية والإحصائيات
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-analytics.js";
-    
-    // استيراد أدوات تسجيل الدخول
-    import { 
-        getAuth, 
-        createUserWithEmailAndPassword, 
-        signInWithEmailAndPassword,
-        GoogleAuthProvider,
-        signInWithPopup 
-    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+    import { getDatabase, ref, set, get, update, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
 
-    // إعدادات مشروعك بالظبط زي ما بعتهالي
+    // إعدادات مشروعك
     const firebaseConfig = {
-      apiKey: "AIzaSyCfecAbSWaJfcXox7HBDKLjXdwpVyFnvEQ",
-      authDomain: "mopi-5b11b.firebaseapp.com",
-      projectId: "mopi-5b11b",
-      storageBucket: "mopi-5b11b.firebasestorage.app",
-      messagingSenderId: "1045999810663",
-      appId: "1:1045999810663:web:ea56ddeed5cfec77453cc2",
-      measurementId: "G-4PLBETDRVQ"
+        apiKey: "AIzaSyCfecAbSWaJfcXox7HBDKLjXdwpVyFnvEQ",
+        authDomain: "mopi-5b11b.firebaseapp.com",
+        projectId: "mopi-5b11b",
+        storageBucket: "mopi-5b11b.firebasestorage.app",
+        messagingSenderId: "1045999810663",
+        appId: "1:1045999810663:web:ea56ddeed5cfec77453cc2",
+        measurementId: "G-4PLBETDRVQ"
     };
 
-    // تشغيل فايربيز
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
     const auth = getAuth(app);
+    const db = getDatabase(app);
     const googleProvider = new GoogleAuthProvider();
 
-    // تعريف العناصر من واجهة المستخدم
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
+    // عناصر الواجهة
+    const authSection = document.getElementById('auth-section');
+    const dashboardSection = document.getElementById('dashboard-section');
     const messageDiv = document.getElementById('message');
 
-    // وظيفة: إنشاء حساب جديد بالايميل والباسورد
+    // مراقب حالة الدخول
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            authSection.style.display = 'none';
+            dashboardSection.style.display = 'block';
+            document.getElementById('myId').innerText = user.uid;
+            
+            // تحديث الرصيد مباشرة عند التغيير في الداتا بيز
+            const starCountRef = ref(db, 'users/' + user.uid + '/coins');
+            onValue(starCountRef, (snapshot) => {
+                const data = snapshot.val();
+                document.getElementById('coinBalance').innerText = data || 0;
+            });
+        } else {
+            authSection.style.display = 'block';
+            dashboardSection.style.display = 'none';
+        }
+    });
+
+    // 1. إنشاء حساب
     document.getElementById('signupBtn').addEventListener('click', () => {
-        const email = emailInput.value;
-        const password = passwordInput.value;
-        
-        if(!email || !password) {
-            showMessage("أدخل البريد وكلمة المرور أولاً!", "red");
-            return;
-        }
-
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
         createUserWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                showMessage("عاش! تم إنشاء الحساب بنجاح، تقدر تسجل دخول دلوقتي.", "green");
-            })
-            .catch((error) => {
-                showMessage("حصلت مشكلة: " + error.message, "red");
-            });
+            .then((res) => {
+                // عند التسجيل لأول مرة، بنحط له 0 كوينز في الداتا بيز
+                set(ref(db, 'users/' + res.user.uid), { coins: 0, email: email });
+                notify("تم إنشاء الحساب!", "green");
+            }).catch(err => notify(err.message, "red"));
     });
 
-    // وظيفة: تسجيل الدخول بالايميل والباسورد
+    // 2. تسجيل دخول
     document.getElementById('loginBtn').addEventListener('click', () => {
-        const email = emailInput.value;
-        const password = passwordInput.value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        signInWithEmailAndPassword(auth, email, password)
+            .then(() => notify("تم الدخول!", "green"))
+            .catch(err => notify("خطأ في البيانات", "red"));
+    });
 
-        if(!email || !password) {
-            showMessage("أدخل البريد وكلمة المرور أولاً!", "red");
+    // 3. دخول بجوجل
+    document.getElementById('googleBtn').addEventListener('click', () => {
+        signInWithPopup(auth, googleProvider).then((res) => {
+            // فحص إذا كان المستخدم جديد عشان نحط له 0 كوينز
+            const userRef = ref(db, 'users/' + res.user.uid);
+            get(userRef).then(snap => {
+                if(!snap.exists()) set(userRef, { coins: 0, email: res.user.email });
+            });
+        }).catch(err => notify(err.message, "red"));
+    });
+
+    // 4. ربح الكوينز
+    document.getElementById('earnBtn').addEventListener('click', () => {
+        const user = auth.currentUser;
+        if (user) {
+            const coinRef = ref(db, 'users/' + user.uid + '/coins');
+            runTransaction(coinRef, (current) => {
+                return (current || 0) + 10;
+            });
+        }
+    });
+
+    // 5. تحويل الكوينز (العملية الأهم)
+    document.getElementById('sendBtn').addEventListener('click', async () => {
+        const sender = auth.currentUser;
+        const receiverId = document.getElementById('receiverId').value.trim();
+        const amount = parseInt(document.getElementById('sendAmount').value);
+
+        if (!receiverId || isNaN(amount) || amount <= 0) {
+            notify("تأكد من البيانات!", "red");
             return;
         }
 
-        signInWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                showMessage("أهلاً بيك! تم تسجيل الدخول بنجاح.", "blue");
-                // تقدر تضيف كود هنا يحولك لصفحة تانية بعد الدخول
-            })
-            .catch((error) => {
-                showMessage("بيانات غير صحيحة، اتأكد من الإيميل والباسورد.", "red");
-            });
+        if (receiverId === sender.uid) {
+            notify("لا يمكنك الإرسال لنفسك!", "red");
+            return;
+        }
+
+        const senderRef = ref(db, 'users/' + sender.uid + '/coins');
+        const receiverRef = ref(db, 'users/' + receiverId + '/coins');
+
+        const senderSnap = await get(senderRef);
+        const currentBalance = senderSnap.val() || 0;
+
+        if (currentBalance < amount) {
+            notify("رصيدك غير كافٍ!", "red");
+            return;
+        }
+
+        // فحص هل الـ ID التاني موجود أصلاً؟
+        const receiverSnap = await get(ref(db, 'users/' + receiverId));
+        if (!receiverSnap.exists()) {
+            notify("الـ ID هذا غير موجود!", "red");
+            return;
+        }
+
+        // تنفيذ عملية التحويل
+        update(ref(db, 'users/' + sender.uid), { coins: currentBalance - amount });
+        update(ref(db, 'users/' + receiverId), { coins: (receiverSnap.val().coins || 0) + amount });
+        
+        notify("تم إرسال " + amount + " كوينز بنجاح!", "green");
+        document.getElementById('sendAmount').value = "";
+        document.getElementById('receiverId').value = "";
     });
 
-    // وظيفة: تسجيل الدخول بحساب جوجل
-    document.getElementById('googleBtn').addEventListener('click', () => {
-        signInWithPopup(auth, googleProvider)
-            .then((result) => {
-                const user = result.user;
-                showMessage("منور يا " + user.displayName + "! تم الدخول بجوجل.", "blue");
-            }).catch((error) => {
-                showMessage("فشل الدخول بجوجل: " + error.message, "red");
-            });
-    });
+    // تسجيل خروج
+    document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
 
-    // دالة مساعدة عشان تعرض الرسايل بشكل منظم
-    function showMessage(text, color) {
-        messageDiv.innerText = text;
+    function notify(msg, color) {
+        messageDiv.innerText = msg;
         messageDiv.style.color = color;
     }
 </script>
-
 </body>
 </html>
