@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - ميدو AI</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f0f2f5; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            width: 350px; 
+            text-align: center; 
+        }
+        h2 { color: #1a73e8; margin-bottom: 20px; }
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border: 1px solid #ddd; 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+        }
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            transition: 0.3s; 
+            margin-top: 10px; 
+            font-size: 15px;
+        }
+        .btn-login { background-color: #1a73e8; color: white; }
+        .btn-login:hover { background-color: #1557b0; }
+        
+        .btn-signup { background-color: #34a853; color: white; }
+        .btn-signup:hover { background-color: #2d8e47; }
+        
+        .btn-google { background-color: #ea4335; color: white; margin-top: 20px; }
+        .btn-google:hover { background-color: #c5221f; }
+        
+        .divider {
+            margin: 20px 0;
+            border-bottom: 1px solid #ddd;
+            position: relative;
+        }
+        .divider span {
+            background: white;
+            padding: 0 10px;
+            color: #888;
+            font-size: 14px;
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .msg { margin-top: 15px; font-size: 14px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>ميدو AI - تسجيل الدخول</h2>
+    
+    <input type="email" id="email" placeholder="البريد الإلكتروني (مثال: test@test.com)">
+    <input type="password" id="password" placeholder="كلمة المرور (6 أحرف أو أكثر)">
+    
+    <button class="btn-login" id="loginBtn">تسجيل الدخول</button>
+    <button class="btn-signup" id="signupBtn">إنشاء حساب جديد</button>
+    
+    <div class="divider"><span>أو</span></div>
+    
+    <button class="btn-google" id="googleBtn">الدخول بواسطة حساب Google</button>
+    
+    <div id="message" class="msg"></div>
+</div>
+
+<script type="module">
+    // استيراد الأدوات الأساسية والإحصائيات
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-analytics.js";
+    
+    // استيراد أدوات تسجيل الدخول
+    import { 
+        getAuth, 
+        createUserWithEmailAndPassword, 
+        signInWithEmailAndPassword,
+        GoogleAuthProvider,
+        signInWithPopup 
+    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+
+    // إعدادات مشروعك بالظبط زي ما بعتهالي
+    const firebaseConfig = {
+      apiKey: "AIzaSyCfecAbSWaJfcXox7HBDKLjXdwpVyFnvEQ",
+      authDomain: "mopi-5b11b.firebaseapp.com",
+      projectId: "mopi-5b11b",
+      storageBucket: "mopi-5b11b.firebasestorage.app",
+      messagingSenderId: "1045999810663",
+      appId: "1:1045999810663:web:ea56ddeed5cfec77453cc2",
+      measurementId: "G-4PLBETDRVQ"
+    };
+
+    // تشغيل فايربيز
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const googleProvider = new GoogleAuthProvider();
+
+    // تعريف العناصر من واجهة المستخدم
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const messageDiv = document.getElementById('message');
+
+    // وظيفة: إنشاء حساب جديد بالايميل والباسورد
+    document.getElementById('signupBtn').addEventListener('click', () => {
+        const email = emailInput.value;
+        const password = passwordInput.value;
+        
+        if(!email || !password) {
+            showMessage("أدخل البريد وكلمة المرور أولاً!", "red");
+            return;
+        }
+
+        createUserWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                showMessage("عاش! تم إنشاء الحساب بنجاح، تقدر تسجل دخول دلوقتي.", "green");
+            })
+            .catch((error) => {
+                showMessage("حصلت مشكلة: " + error.message, "red");
+            });
+    });
+
+    // وظيفة: تسجيل الدخول بالايميل والباسورد
+    document.getElementById('loginBtn').addEventListener('click', () => {
+        const email = emailInput.value;
+        const password = passwordInput.value;
+
+        if(!email || !password) {
+            showMessage("أدخل البريد وكلمة المرور أولاً!", "red");
+            return;
+        }
+
+        signInWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                showMessage("أهلاً بيك! تم تسجيل الدخول بنجاح.", "blue");
+                // تقدر تضيف كود هنا يحولك لصفحة تانية بعد الدخول
+            })
+            .catch((error) => {
+                showMessage("بيانات غير صحيحة، اتأكد من الإيميل والباسورد.", "red");
+            });
+    });
+
+    // وظيفة: تسجيل الدخول بحساب جوجل
+    document.getElementById('googleBtn').addEventListener('click', () => {
+        signInWithPopup(auth, googleProvider)
+            .then((result) => {
+                const user = result.user;
+                showMessage("منور يا " + user.displayName + "! تم الدخول بجوجل.", "blue");
+            }).catch((error) => {
+                showMessage("فشل الدخول بجوجل: " + error.message, "red");
+            });
+    });
+
+    // دالة مساعدة عشان تعرض الرسايل بشكل منظم
+    function showMessage(text, color) {
+        messageDiv.innerText = text;
+        messageDiv.style.color = color;
+    }
+</script>
+
+</body>
+</html>
