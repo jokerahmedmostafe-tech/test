@@ -3,28 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ميدو AI - نظام الكوينز</title>
+    <title>ميدو AI - نظام الكوينز والموبايل</title>
     <style>
         :root { --primary: #1a73e8; --secondary: #34a853; --accent: #ea4335; --bg: #f8f9fa; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); display: flex; justify-content: center; padding: 20px; margin: 0; }
         .container { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; }
-        
-        /* التنسيقات */
         h2 { color: var(--primary); margin-bottom: 20px; }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
         button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; margin-top: 10px; font-size: 15px; }
-        
         .btn-blue { background: var(--primary); color: white; }
         .btn-green { background: var(--secondary); color: white; }
         .btn-red { background: var(--accent); color: white; }
         .btn-outline { background: transparent; border: 1px solid #ddd; color: #555; }
-        
-        /* الأقسام */
         #auth-section, #dashboard-section { display: none; }
         .card { background: #f1f3f4; padding: 15px; border-radius: 10px; margin: 15px 0; text-align: right; }
         .balance-text { font-size: 24px; color: var(--secondary); font-weight: bold; text-align: center; }
         .uid-text { font-size: 11px; color: #777; word-break: break-all; background: #eee; padding: 5px; border-radius: 5px; }
         .status-msg { margin-top: 10px; font-size: 13px; font-weight: bold; }
+        #otp-section { display: none; border-top: 1px dashed #ccc; margin-top: 10px; padding-top: 10px; }
     </style>
 </head>
 <body>
@@ -32,34 +28,46 @@
 <div class="container">
     <h2>Mopi - ميدو AI</h2>
 
+    <!-- قسم تسجيل الدخول -->
     <div id="auth-section">
+        <!-- الإيميل والباسورد -->
         <input type="email" id="email" placeholder="البريد الإلكتروني">
         <input type="password" id="password" placeholder="كلمة المرور">
-        <button class="btn-blue" id="loginBtn">تسجيل الدخول</button>
+        <button class="btn-blue" id="loginBtn">دخول بالإيميل</button>
         <button class="btn-green" id="signupBtn">إنشاء حساب جديد</button>
+        
+        <hr>
+        
+        <!-- الهاتف -->
+        <input type="text" id="phone" placeholder="رقم الهاتف (مثال: +201000000000)">
+        <div id="recaptcha-container"></div>
+        <button class="btn-blue" style="background-color: #555;" id="sendOtpBtn">إرسال كود التحقق (SMS)</button>
+        
+        <div id="otp-section">
+            <input type="text" id="otp" placeholder="أدخل الكود المكون من 6 أرقام">
+            <button class="btn-green" id="verifyOtpBtn">تأكيد الكود وتسجيل الدخول</button>
+        </div>
+
         <hr>
         <button class="btn-red" id="googleBtn">الدخول بواسطة Google</button>
     </div>
 
+    <!-- قسم لوحة التحكم -->
     <div id="dashboard-section">
         <div class="card">
             <div class="balance-text">رصيدك: <span id="coinBalance">0</span> 🪙</div>
         </div>
-
         <div class="card">
-            <strong>الـ ID الخاص بك (للاستلام):</strong>
+            <strong>الـ ID الخاص بك:</strong>
             <div class="uid-text" id="myId">جاري التحميل...</div>
         </div>
-
         <button class="btn-green" id="earnBtn">إضغط هنا لربح 10 كوينز ⚡</button>
-
         <div class="card">
             <strong>إرسال كوينز لصديق:</strong>
             <input type="text" id="receiverId" placeholder="ضع الـ ID الخاص بصديقك هنا">
             <input type="number" id="sendAmount" placeholder="الكمية">
             <button class="btn-blue" id="sendBtn">إرسال الآن</button>
         </div>
-
         <button class="btn-outline" id="logoutBtn">تسجيل الخروج</button>
     </div>
 
@@ -67,11 +75,10 @@
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-    import { getDatabase, ref, set, get, update, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+    import { initializeApp } from "[https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js](https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js)";
+    import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut, RecaptchaVerifier, signInWithPhoneNumber } from "[https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js](https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js)";
+    import { getDatabase, ref, set, get, update, onValue, runTransaction } from "[https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js](https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js)";
 
-    // إعدادات مشروعك
     const firebaseConfig = {
         apiKey: "AIzaSyCfecAbSWaJfcXox7HBDKLjXdwpVyFnvEQ",
         authDomain: "mopi-5b11b.firebaseapp.com",
@@ -87,23 +94,23 @@
     const db = getDatabase(app);
     const googleProvider = new GoogleAuthProvider();
 
-    // عناصر الواجهة
     const authSection = document.getElementById('auth-section');
     const dashboardSection = document.getElementById('dashboard-section');
     const messageDiv = document.getElementById('message');
+    let confirmationResult; // لحفظ نتيجة إرسال كود الهاتف
 
-    // مراقب حالة الدخول
+    // تهيئة الـ ReCAPTCHA (ضروري للأمان في تسجيل الهاتف)
+    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        'size': 'invisible'
+    });
+
     onAuthStateChanged(auth, (user) => {
         if (user) {
             authSection.style.display = 'none';
             dashboardSection.style.display = 'block';
             document.getElementById('myId').innerText = user.uid;
-            
-            // تحديث الرصيد مباشرة عند التغيير في الداتا بيز
-            const starCountRef = ref(db, 'users/' + user.uid + '/coins');
-            onValue(starCountRef, (snapshot) => {
-                const data = snapshot.val();
-                document.getElementById('coinBalance').innerText = data || 0;
+            onValue(ref(db, 'users/' + user.uid + '/coins'), (snap) => {
+                document.getElementById('coinBalance').innerText = snap.val() || 0;
             });
         } else {
             authSection.style.display = 'block';
@@ -111,93 +118,86 @@
         }
     });
 
-    // 1. إنشاء حساب
+    // --- وظائف التسجيل ---
+
+    // 1. إرسال كود الهاتف
+    document.getElementById('sendOtpBtn').addEventListener('click', () => {
+        const phoneNumber = document.getElementById('phone').value;
+        const appVerifier = window.recaptchaVerifier;
+
+        signInWithPhoneNumber(auth, phoneNumber, appVerifier)
+            .then((result) => {
+                confirmationResult = result;
+                document.getElementById('otp-section').style.display = 'block';
+                notify("تم إرسال الكود بنجاح!", "blue");
+            }).catch((err) => notify("خطأ: " + err.message, "red"));
+    });
+
+    // 2. تأكيد كود الهاتف
+    document.getElementById('verifyOtpBtn').addEventListener('click', () => {
+        const code = document.getElementById('otp').value;
+        confirmationResult.confirm(code).then((result) => {
+            const user = result.user;
+            // تصفير الكوينز لو أول مرة يدخل
+            checkNewUser(user);
+            notify("تم الدخول برقم الهاتف!", "green");
+        }).catch(() => notify("كود التحقق خاطئ!", "red"));
+    });
+
+    // 3. الإيميل والجوجل (نفس الكود السابق مع دمج checkNewUser)
     document.getElementById('signupBtn').addEventListener('click', () => {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
-        createUserWithEmailAndPassword(auth, email, password)
-            .then((res) => {
-                // عند التسجيل لأول مرة، بنحط له 0 كوينز في الداتا بيز
-                set(ref(db, 'users/' + res.user.uid), { coins: 0, email: email });
-                notify("تم إنشاء الحساب!", "green");
-            }).catch(err => notify(err.message, "red"));
-    });
-
-    // 2. تسجيل دخول
-    document.getElementById('loginBtn').addEventListener('click', () => {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        signInWithEmailAndPassword(auth, email, password)
-            .then(() => notify("تم الدخول!", "green"))
-            .catch(err => notify("خطأ في البيانات", "red"));
-    });
-
-    // 3. دخول بجوجل
-    document.getElementById('googleBtn').addEventListener('click', () => {
-        signInWithPopup(auth, googleProvider).then((res) => {
-            // فحص إذا كان المستخدم جديد عشان نحط له 0 كوينز
-            const userRef = ref(db, 'users/' + res.user.uid);
-            get(userRef).then(snap => {
-                if(!snap.exists()) set(userRef, { coins: 0, email: res.user.email });
-            });
+        createUserWithEmailAndPassword(auth, email, password).then((res) => {
+            set(ref(db, 'users/' + res.user.uid), { coins: 0, email: email });
         }).catch(err => notify(err.message, "red"));
     });
 
-    // 4. ربح الكوينز
-    document.getElementById('earnBtn').addEventListener('click', () => {
-        const user = auth.currentUser;
-        if (user) {
-            const coinRef = ref(db, 'users/' + user.uid + '/coins');
-            runTransaction(coinRef, (current) => {
-                return (current || 0) + 10;
-            });
-        }
+    document.getElementById('loginBtn').addEventListener('click', () => {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        signInWithEmailAndPassword(auth, email, password).catch(err => notify("بيانات خاطئة", "red"));
     });
 
-    // 5. تحويل الكوينز (العملية الأهم)
+    document.getElementById('googleBtn').addEventListener('click', () => {
+        signInWithPopup(auth, googleProvider).then((res) => checkNewUser(res.user));
+    });
+
+    // وظيفة لفحص هل المستخدم جديد (عشان الكوينز)
+    function checkNewUser(user) {
+        get(ref(db, 'users/' + user.uid)).then(snap => {
+            if(!snap.exists()) set(ref(db, 'users/' + user.uid), { coins: 0, loginMethod: 'phone/google' });
+        });
+    }
+
+    // --- نظام الكوينز والتحويل ---
+    document.getElementById('earnBtn').addEventListener('click', () => {
+        runTransaction(ref(db, 'users/' + auth.currentUser.uid + '/coins'), (c) => (c || 0) + 10);
+    });
+
     document.getElementById('sendBtn').addEventListener('click', async () => {
         const sender = auth.currentUser;
         const receiverId = document.getElementById('receiverId').value.trim();
         const amount = parseInt(document.getElementById('sendAmount').value);
 
-        if (!receiverId || isNaN(amount) || amount <= 0) {
-            notify("تأكد من البيانات!", "red");
-            return;
-        }
-
-        if (receiverId === sender.uid) {
-            notify("لا يمكنك الإرسال لنفسك!", "red");
+        if (!receiverId || isNaN(amount) || amount <= 0 || receiverId === sender.uid) {
+            notify("بيانات التحويل غير صحيحة!", "red");
             return;
         }
 
         const senderRef = ref(db, 'users/' + sender.uid + '/coins');
-        const receiverRef = ref(db, 'users/' + receiverId + '/coins');
+        const receiverSnap = await get(ref(db, 'users/' + receiverId));
+
+        if (!receiverSnap.exists()) { notify("الـ ID غير موجود!", "red"); return; }
 
         const senderSnap = await get(senderRef);
-        const currentBalance = senderSnap.val() || 0;
+        if ((senderSnap.val() || 0) < amount) { notify("رصيدك لا يكفي!", "red"); return; }
 
-        if (currentBalance < amount) {
-            notify("رصيدك غير كافٍ!", "red");
-            return;
-        }
-
-        // فحص هل الـ ID التاني موجود أصلاً؟
-        const receiverSnap = await get(ref(db, 'users/' + receiverId));
-        if (!receiverSnap.exists()) {
-            notify("الـ ID هذا غير موجود!", "red");
-            return;
-        }
-
-        // تنفيذ عملية التحويل
-        update(ref(db, 'users/' + sender.uid), { coins: currentBalance - amount });
+        update(ref(db, 'users/' + sender.uid), { coins: senderSnap.val() - amount });
         update(ref(db, 'users/' + receiverId), { coins: (receiverSnap.val().coins || 0) + amount });
-        
-        notify("تم إرسال " + amount + " كوينز بنجاح!", "green");
-        document.getElementById('sendAmount').value = "";
-        document.getElementById('receiverId').value = "";
+        notify("تم التحويل!", "green");
     });
 
-    // تسجيل خروج
     document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
 
     function notify(msg, color) {
