@@ -30,24 +30,18 @@
 
     <!-- قسم تسجيل الدخول -->
     <div id="auth-section">
-        <!-- الإيميل والباسورد -->
         <input type="email" id="email" placeholder="البريد الإلكتروني">
         <input type="password" id="password" placeholder="كلمة المرور">
         <button class="btn-blue" id="loginBtn">دخول بالإيميل</button>
         <button class="btn-green" id="signupBtn">إنشاء حساب جديد</button>
-        
         <hr>
-        
-        <!-- الهاتف -->
         <input type="text" id="phone" placeholder="رقم الهاتف (مثال: +201000000000)">
         <div id="recaptcha-container"></div>
         <button class="btn-blue" style="background-color: #555;" id="sendOtpBtn">إرسال كود التحقق (SMS)</button>
-        
         <div id="otp-section">
             <input type="text" id="otp" placeholder="أدخل الكود المكون من 6 أرقام">
             <button class="btn-green" id="verifyOtpBtn">تأكيد الكود وتسجيل الدخول</button>
         </div>
-
         <hr>
         <button class="btn-red" id="googleBtn">الدخول بواسطة Google</button>
     </div>
@@ -75,9 +69,10 @@
 </div>
 
 <script type="module">
-    import { initializeApp } from "[https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js](https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js)";
-    import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut, RecaptchaVerifier, signInWithPhoneNumber } from "[https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js](https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js)";
-    import { getDatabase, ref, set, get, update, onValue, runTransaction } from "[https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js](https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js)";
+    // لاحظ هنا شلنا الأقواس [ ] اللي كانت في روابط الـ import
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+    import { getDatabase, ref, set, get, update, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCfecAbSWaJfcXox7HBDKLjXdwpVyFnvEQ",
@@ -97,9 +92,8 @@
     const authSection = document.getElementById('auth-section');
     const dashboardSection = document.getElementById('dashboard-section');
     const messageDiv = document.getElementById('message');
-    let confirmationResult; // لحفظ نتيجة إرسال كود الهاتف
+    let confirmationResult;
 
-    // تهيئة الـ ReCAPTCHA (ضروري للأمان في تسجيل الهاتف)
     window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         'size': 'invisible'
     });
@@ -118,13 +112,9 @@
         }
     });
 
-    // --- وظائف التسجيل ---
-
-    // 1. إرسال كود الهاتف
     document.getElementById('sendOtpBtn').addEventListener('click', () => {
         const phoneNumber = document.getElementById('phone').value;
         const appVerifier = window.recaptchaVerifier;
-
         signInWithPhoneNumber(auth, phoneNumber, appVerifier)
             .then((result) => {
                 confirmationResult = result;
@@ -133,18 +123,14 @@
             }).catch((err) => notify("خطأ: " + err.message, "red"));
     });
 
-    // 2. تأكيد كود الهاتف
     document.getElementById('verifyOtpBtn').addEventListener('click', () => {
         const code = document.getElementById('otp').value;
         confirmationResult.confirm(code).then((result) => {
-            const user = result.user;
-            // تصفير الكوينز لو أول مرة يدخل
-            checkNewUser(user);
-            notify("تم الدخول برقم الهاتف!", "green");
-        }).catch(() => notify("كود التحقق خاطئ!", "red"));
+            checkNewUser(result.user);
+            notify("تم الدخول!", "green");
+        }).catch(() => notify("كود خاطئ", "red"));
     });
 
-    // 3. الإيميل والجوجل (نفس الكود السابق مع دمج checkNewUser)
     document.getElementById('signupBtn').addEventListener('click', () => {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
@@ -163,14 +149,12 @@
         signInWithPopup(auth, googleProvider).then((res) => checkNewUser(res.user));
     });
 
-    // وظيفة لفحص هل المستخدم جديد (عشان الكوينز)
     function checkNewUser(user) {
         get(ref(db, 'users/' + user.uid)).then(snap => {
-            if(!snap.exists()) set(ref(db, 'users/' + user.uid), { coins: 0, loginMethod: 'phone/google' });
+            if(!snap.exists()) set(ref(db, 'users/' + user.uid), { coins: 0 });
         });
     }
 
-    // --- نظام الكوينز والتحويل ---
     document.getElementById('earnBtn').addEventListener('click', () => {
         runTransaction(ref(db, 'users/' + auth.currentUser.uid + '/coins'), (c) => (c || 0) + 10);
     });
@@ -179,23 +163,20 @@
         const sender = auth.currentUser;
         const receiverId = document.getElementById('receiverId').value.trim();
         const amount = parseInt(document.getElementById('sendAmount').value);
-
-        if (!receiverId || isNaN(amount) || amount <= 0 || receiverId === sender.uid) {
-            notify("بيانات التحويل غير صحيحة!", "red");
-            return;
-        }
+        if (!receiverId || isNaN(amount) || amount <= 0) return;
 
         const senderRef = ref(db, 'users/' + sender.uid + '/coins');
-        const receiverSnap = await get(ref(db, 'users/' + receiverId));
-
-        if (!receiverSnap.exists()) { notify("الـ ID غير موجود!", "red"); return; }
-
+        const receiverRef = ref(db, 'users/' + receiverId + '/coins');
         const senderSnap = await get(senderRef);
-        if ((senderSnap.val() || 0) < amount) { notify("رصيدك لا يكفي!", "red"); return; }
-
-        update(ref(db, 'users/' + sender.uid), { coins: senderSnap.val() - amount });
-        update(ref(db, 'users/' + receiverId), { coins: (receiverSnap.val().coins || 0) + amount });
-        notify("تم التحويل!", "green");
+        
+        if ((senderSnap.val() || 0) >= amount) {
+            update(ref(db, 'users/' + sender.uid), { coins: senderSnap.val() - amount });
+            const receiverSnap = await get(receiverRef);
+            update(ref(db, 'users/' + receiverId), { coins: (receiverSnap.val() || 0) + amount });
+            notify("تم التحويل!", "green");
+        } else {
+            notify("رصيدك غير كافي", "red");
+        }
     });
 
     document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
